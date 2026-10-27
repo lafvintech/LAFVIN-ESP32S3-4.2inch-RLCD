@@ -1,0 +1,9 @@
+# Keep this file ASCII: Windows kconfgen may use the system code page.
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+# /recordings exceeds the FATFS 8.3 name limit; enable long filenames.
+CONFIG_FATFS_LFN_HEAP=y
+CONFIG_CODEC_ES8311_SUPPORT=y
+CONFIG_CODEC_ES7210_SUPPORT=y
+# CONFIG_CODEC_I2C_BACKWARD_COMPATIBLE is not set
