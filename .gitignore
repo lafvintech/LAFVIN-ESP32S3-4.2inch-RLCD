@@ -1,0 +1,10 @@
+docs/build/
+docs/source/_images/*
+!docs/source/_images/LB018-1.jpg
+!docs/source/_images/LB018-2.jpg
+!docs/source/_images/LB018-3.jpg
+!docs/source/_images/LB018-pinout.jpg
+!docs/source/_images/rtc-backup-battery.png
+*.pyc
+__pycache__/
+*build/

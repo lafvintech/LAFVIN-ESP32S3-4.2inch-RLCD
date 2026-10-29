@@ -1,0 +1,139 @@
+.. _esp-idf-tutorial:
+
+2. ESP-IDF
+==========
+
+This section uses ESP-IDF to write and flash programs for the
+LAFVIN ESP32-S3 4.2inch RLCD Development Board.
+Start with battery voltage measurement, then learn about Wi-Fi, the display, the clock,
+temperature and humidity, storage, and audio.
+Each lesson includes its own setup and operating instructions, so you can start directly with this section.
+
+
+Before You Begin
+----------------
+
+Prepare the board, a USB Type-C data cable, and a computer.
+Follow :ref:`idf_install` to install the development tools. These examples use **ESP-IDF 5.4** as their baseline.
+Then follow :ref:`download-code` in the appendices to download and extract the complete example code.
+
+An 18650 battery, a MicroSD card, and an RTC backup battery are not included in the kit.
+Prepare them as needed for each example; see :ref:`kit-extra-accessories` for selection and connection instructions.
+
+.. _idf-project-structure:
+
+Opening an Example Project
+--------------------------
+
+Each numbered directory is an ESP-IDF project. For example, to work on battery measurement,
+choose **File → Open Folder** in VS Code and open
+``examples/esp-idf/01_adc_battery``, rather than its main subdirectory.
+
+The projects reference shared components and default settings in the parent directory.
+Keep the complete directory structure after extraction:
+
+.. code-block:: text
+
+   examples/esp-idf/
+   ├── components/             Shared peripheral drivers and components
+   ├── sdkconfig.defaults      Shared default board settings
+   └── 01_adc_battery/         This lesson's project; open this folder in VS Code
+       ├── CMakeLists.txt
+       └── main/
+           ├── CMakeLists.txt
+           └── app_main.c
+
+``main/app_main.c`` is the program entry point. Files in components provide reusable functionality.
+Copying only a numbered project directory leaves out the shared files.
+For another lesson, open its corresponding project directory.
+
+.. _idf-board-settings:
+
+Board Settings
+--------------
+
+The supplied projects use CMakeLists.txt to load their default settings. The main settings are:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Item
+     - Setting
+   * - Target chip
+     - ESP32-S3 (esp32s3)
+   * - Flash
+     - 16 MB, QIO mode
+   * - PSRAM
+     - Octal (OPI) mode, 80 MHz
+   * - Serial console
+     - USB Serial/JTAG
+
+The defaults are applied when configuring a project for the first time.
+A project with an existing sdkconfig file keeps its saved settings.
+To change them, run ``idf.py menuconfig`` in the project terminal.
+
+.. _idf-build-flash:
+
+Building, Flashing, and Viewing Output
+--------------------------------------
+
+Run the following commands in a **terminal with the ESP-IDF 5.4 environment loaded**.
+Make sure its current directory is the lesson's project folder,
+which contains the top-level CMakeLists.txt file.
+When using a project for the first time, run:
+
+.. code-block:: console
+
+   idf.py --version
+   idf.py set-target esp32s3
+   idf.py build
+
+The first command checks the ESP-IDF version; the next two select the target chip and build the project.
+``set-target`` regenerates the project configuration. Use it for initial setup or when changing targets.
+After routine code changes, run ``idf.py build`` directly.
+
+Connect the board with the USB Type-C data cable and find its serial port in your operating system.
+The example below uses COM5 on Windows. **Replace COM5 with your actual port**, then run:
+
+.. code-block:: console
+
+   idf.py -p COM5 flash monitor
+
+This flashes the firmware and opens the serial monitor. Press **Ctrl + ]** to exit the monitor.
+To view output without flashing again, run ``idf.py -p COM5 monitor``.
+Before flashing, close any other serial monitor using the same port.
+
+
+Optional Board Check
+--------------------
+
+To check basic connectivity first, open ``examples/esp-idf/00_board_check``
+and build and flash it in the same way. It prints information about the chip, Flash,
+PSRAM, I2C devices, battery, and buttons.
+
+
+Example Tutorials
+-----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   ESP-IDF/01_adc_battery
+   ESP-IDF/02_wifi_modes
+   ESP-IDF/03_rlcd_driver
+   ESP-IDF/04_hello_rlcd
+   ESP-IDF/05_rtc_pcf85063
+   ESP-IDF/06_shtc3_env
+   ESP-IDF/07_local_dashboard
+   ESP-IDF/08_network_weather
+   ESP-IDF/09_sd_card
+   ESP-IDF/10_lvgl_ui
+   ESP-IDF/11_audio
+
+
+References
+----------
+
+* `ESP-IDF 5.4: idf.py Commands <https://docs.espressif.com/projects/esp-idf/en/v5.4/esp32s3/api-guides/tools/idf-py.html>`_
+* `ESP-IDF 5.4: USB Serial/JTAG Console <https://docs.espressif.com/projects/esp-idf/en/v5.4/esp32s3/api-guides/usb-serial-jtag-console.html>`_

@@ -1,0 +1,100 @@
+.. _idf-rtc:
+
+5. RTC Real-Time Clock
+======================
+
+Overview
+--------
+
+This lesson reads the PCF85063 real-time clock over I2C and displays the time, date, and day of the week on the RLCD.
+You can set the time with a serial command. The RTC keeps time independently;
+the program reads it and updates the display every second.
+
+At startup, the program reads the time already stored in the RTC without replacing it with the build time.
+If the chip reports that the clock has stopped, or the date is invalid, the program prompts you to set the time again.
+
+Setup
+-----
+
+No code settings need to be changed, and no additional third-party components are required.
+Follow :ref:`esp-idf-tutorial` to prepare the environment and the complete example code,
+then open the ``examples/esp-idf/05_rtc_pcf85063`` project.
+Follow :ref:`idf-build-flash` to build, flash, and open the serial monitor.
+This example uses the onboard RTC and needs no extra wiring or network connection.
+
+Setting the Time from the Serial Console
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. Wait for the ``rtc>`` prompt in the serial monitor.
+#. Enter ``rtc-set YYYY-MM-DD HH:MM:SS`` and press Enter.
+   Use the following line as an example, replacing its date and time with the current values.
+
+   .. code-block:: text
+
+      rtc-set 2026-10-26 12:34:56
+
+#. After the time is set successfully, the console shows ``RTC set OK ->`` followed by the time read back from the RTC, and the screen updates.
+
+This example supports years 2000–2099 and calculates the day of the week from the date.
+If you see ``Usage`` or ``Invalid date/time``, check the command prefix, the spaces between the date and time,
+and whether the date is valid. You can use the same command to correct an RTC that already has a valid time.
+
+Code Walkthrough
+----------------
+
+Reading Time Data
+^^^^^^^^^^^^^^^^^
+
+``examples/esp-idf/components/pcf85063/pcf85063.c`` reads seven bytes in one operation,
+starting at the seconds register: seconds, minutes, hours, day, weekday, month, and year.
+
+.. code-block:: c
+
+   uint8_t raw[7] = {0};
+   const esp_err_t err = read_registers(
+       PCF85063_REG_SECONDS, raw, sizeof(raw));
+
+The chip stores values such as seconds and minutes in BCD, with separate digits for tens and units.
+For example, 59 is stored as ``0x59``. The driver removes the status bits from each byte,
+then converts it into a numerical value for the program.
+
+Checking Whether the Time Is Valid
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After a successful read, ``examples/esp-idf/05_rtc_pcf85063/main/app_main.c``
+checks the oscillator-stopped flag and date range:
+
+.. code-block:: c
+
+   s_time_valid = !oscillator_stopped &&
+                  pcf85063_datetime_is_valid(&current);
+
+The OS flag means the clock oscillator has stopped at some point, so the time may be unreliable.
+It is unrelated to battery charge. When setting the time, the program writes it, reads it back,
+and checks it before reporting success.
+
+Coordinating Display Updates and Time Setting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The serial task handles ``rtc-set``, while the refresh task reads the time at one-second intervals.
+Both access the same RTC and display, so a mutex coordinates their access and prevents time setting from overlapping with drawing.
+If the time becomes invalid while running, normal time output pauses until you set the time again.
+
+Example Output
+--------------
+
+When the time is valid, the screen shows hours, minutes, seconds, the date, and the day of the week.
+When it is invalid, the screen shows ``RTC TIME UNAVAILABLE`` and ``SET VIA CONSOLE``,
+with the time-setting command format below.
+
+.. figure:: ../img/idf/05_phen.png
+   :alt: PCF85063 display showing the time, date, and day of the week
+   :width: 800px
+   :align: center
+
+   PCF85063 clock display. The IDF version uses a command with the ``rtc-set`` prefix; the bottom of this image shows an older prompt.
+
+References
+----------
+
+* `NXP PCF85063A Datasheet <https://www.nxp.com/docs/en/data-sheet/PCF85063A.pdf>`_
